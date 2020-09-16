@@ -47,7 +47,7 @@ while read line
 do
   SUBJECT=$(echo ${line} | cut -f 2- -d' ')
   COMMIT=$(echo ${line} | cut -f 1 -d' ')
-  if [[ $(git log --oneline --after=${SINCE_DATE} -F --grep "${SUBJECT}" | wc -l) -eq 1 ]]; then
+  if [[ $(git rev-list --count --all --after=${SINCE_DATE} -F --grep "${SUBJECT}") -eq 1 ]]; then
     # Grab the lore link
     MESSAGE_ID=$(git show ${COMMIT} | grep -iP --only-matching "(?<=\+message-id: <)[^>]+(?=>)")
     echo ${SUBJECT} "(https://lore.kernel.org/git/${MESSAGE_ID})" >>${PASTE_CONTENTS}
