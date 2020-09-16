@@ -55,12 +55,11 @@ do
 done <"${ALL_PATCHES}"
 
 # Write these results to a clipboard hoster.
-
-IGNORED_PATCH_COUNT=$(wc -l <${PASTE_CONTENTS})
-TOTAL_PATCH_COUNT=$(wc -l <${ALL_PATCHES})
 PASTE_RAW_LINK=$(haste --raw <${PASTE_CONTENTS})
 
 # Write the clipboard hoster, and a summary, to IRC.
+IGNORED_PATCH_COUNT=$(wc -l <${PASTE_CONTENTS})
+TOTAL_PATCH_COUNT=$(wc -l <${ALL_PATCHES})
 
 #TODO: someday, add NickServ reg; I couldn't get this to work right and
 # #git-devel doesn't need it now.
