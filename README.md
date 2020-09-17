@@ -11,8 +11,9 @@ contributors which patches have been ignored.
 # Setup
 
 1. Clone this repo!
-3. Change the salient configurables in missed-reviews.sh (they're near the top)
+2. Change the salient configurables in post-to-irc.sh and missed-reviews.sh
+   (they're near the top)
 3. Clone your lore archive into `$ML_GIT_DIR`.
 4. Set up a cronjob to run your reviewer bot as often as you like, probably to
-   match `$SINCE_DATE`.
+   match `$SINCE_DATE`. The executable to target is post-to-irc.sh.
 5. Ignore less reviews. Hopefully.
