@@ -43,7 +43,7 @@ sleep 30
 ALL_PATCHES=$(mktemp)
 PASTE_CONTENTS=$(mktemp)
 cd ${ML_GIT_DIR}
-git pull --ff-only 2>&1 >/dev/null
+git pull --ff-only &>/dev/null
 
 # Which ones are patches or RFCs?
 git log --oneline --after=${SINCE_DATE} --grep "^\[\(PATCH\|RFC\)" >${ALL_PATCHES}
