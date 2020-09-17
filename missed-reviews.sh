@@ -25,19 +25,25 @@
 haste() { a=$(cat); curl -X POST -s -d "$a" https://hastebin.com/documents \
 	| awk -F '"' '{print "https://hastebin.com/raw/"$4}'; }
 
-# The salient configurables. Set this up to match your desired lore
-# archive.
-IRC_SERVER="irc.freenode.net"
-IRC_PORT=6667
-IRC_CHANNEL="#nasamuffin-testing"
-SINCE_DATE=$(date -d "2 weeks ago" +%Y-%m-%d)
-ML_GIT_DIR=~/.missed-reviews-bot/archive # clone your lore archive here
+IRC_CHANNEL="$1"
+SINCE_DATE=$(date -d "$2" +%Y-%m-%d)
+ML_GIT_DIR="$3"
+NICK=MissedReviewsBot # Pick a different name for yours - this one's NickServ regged
+NICKSERV_PW=hunter2 # Of course it's not this
+
+# Log into IRC first so we have time to talk to NickServ.
+echo USER ${NICK} ignored ignored :Missed Reviews Bot
+echo NICK ${NICK}
+echo PRIVMSG NickServ :identify ${NICKSERV_PW}
+
+# The MOTD takes forever to show up. Ugh.
+sleep 30
 
 # Grab all the emails from the past week.
 ALL_PATCHES=$(mktemp)
 PASTE_CONTENTS=$(mktemp)
 cd ${ML_GIT_DIR}
-git pull --ff-only
+git pull --ff-only 2>&1 >/dev/null
 
 # Which ones are patches or RFCs?
 git log --oneline --after=${SINCE_DATE} --grep "^\[\(PATCH\|RFC\)" >${ALL_PATCHES}
@@ -61,14 +67,8 @@ PASTE_RAW_LINK=$(haste --raw <${PASTE_CONTENTS})
 IGNORED_PATCH_COUNT=$(wc -l <${PASTE_CONTENTS})
 TOTAL_PATCH_COUNT=$(wc -l <${ALL_PATCHES})
 
-#TODO: someday, add NickServ reg; I couldn't get this to work right and
-# #git-devel doesn't need it now.
-cat <<EOF | nc ${IRC_SERVER} ${IRC_PORT}
-USER MissedReviewsBot ignored ignored :Missed Reviews Bot
-NICK MissedReviewsBot
-JOIN ${IRC_CHANNEL}
-PRIVMSG ${IRC_CHANNEL} :Hi! Since ${SINCE_DATE} there have been ${IGNORED_PATCH_COUNT} untouched reviews: ${PASTE_RAW_LINK}
-PRIVMSG ${IRC_CHANNEL} :That's $(bc <<<"100*$IGNORED_PATCH_COUNT/$TOTAL_PATCH_COUNT" )% of new patches sent since then.
-PRIVMSG ${IRC_CHANNEL} :If you have feedback on this bot, blame nasamuffin.
-QUIT
-EOF
+echo JOIN ${IRC_CHANNEL}
+echo PRIVMSG ${IRC_CHANNEL} :Hi! Since ${SINCE_DATE} there have been ${IGNORED_PATCH_COUNT} untouched reviews: ${PASTE_RAW_LINK}
+echo PRIVMSG ${IRC_CHANNEL} :That\'s $(bc <<<"100*$IGNORED_PATCH_COUNT/$TOTAL_PATCH_COUNT" )% of new patches sent since then.
+echo PRIVMSG ${IRC_CHANNEL} :If you have feedback on this bot, blame nasamuffin.
+echo QUIT
