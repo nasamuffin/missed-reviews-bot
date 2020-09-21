@@ -42,30 +42,30 @@ sleep 30
 # Grab all the emails from the past week.
 ALL_PATCHES=$(mktemp)
 PASTE_CONTENTS=$(mktemp)
-cd ${ML_GIT_DIR}
+cd "${ML_GIT_DIR}" || exit
 git pull --ff-only &>/dev/null
 
 # Which ones are patches or RFCs?
-git log --oneline --after=${SINCE_DATE} --grep "^\[\(PATCH\|RFC\)" >${ALL_PATCHES}
+git log --oneline --after="${SINCE_DATE}" --grep "^\[\(PATCH\|RFC\)" >"${ALL_PATCHES}"
 
 # Of these, which ones have no non-PATCH replies?
-while read line
+while read -r line
 do
-  SUBJECT=$(echo ${line} | cut -f 2- -d' ')
-  COMMIT=$(echo ${line} | cut -f 1 -d' ')
-  if [[ $(git rev-list --count --all --after=${SINCE_DATE} -F --grep "${SUBJECT}") -eq 1 ]]; then
+  SUBJECT="$(echo "${line}" | cut -f 2- -d' ')"
+  COMMIT="$(echo "${line}" | cut -f 1 -d' ')"
+  if [[ $(git rev-list --count --all --after="${SINCE_DATE}" -F --grep "${SUBJECT}") -eq 1 ]]; then
     # Grab the lore link
-    MESSAGE_ID=$(git show ${COMMIT} | grep -iP --only-matching "(?<=\+message-id: <)[^>]+(?=>)")
-    echo ${SUBJECT} "(https://lore.kernel.org/git/${MESSAGE_ID})" >>${PASTE_CONTENTS}
+    MESSAGE_ID=$(git show "${COMMIT}" | grep -iP --only-matching "(?<=\+message-id: <)[^>]+(?=>)")
+    echo "${SUBJECT}" "(https://lore.kernel.org/git/${MESSAGE_ID})" >>"${PASTE_CONTENTS}"
   fi
 done <"${ALL_PATCHES}"
 
 # Write these results to a clipboard hoster.
-PASTE_RAW_LINK=$(haste --raw <${PASTE_CONTENTS})
+PASTE_RAW_LINK=$(haste --raw <"${PASTE_CONTENTS}")
 
 # Write the clipboard hoster, and a summary, to IRC.
-IGNORED_PATCH_COUNT=$(wc -l <${PASTE_CONTENTS})
-TOTAL_PATCH_COUNT=$(wc -l <${ALL_PATCHES})
+IGNORED_PATCH_COUNT=$(wc -l <"${PASTE_CONTENTS}")
+TOTAL_PATCH_COUNT=$(wc -l <"${ALL_PATCHES}")
 
 echo JOIN ${IRC_CHANNEL}
 echo PRIVMSG ${IRC_CHANNEL} :Hi! Since ${SINCE_DATE} there have been ${IGNORED_PATCH_COUNT} untouched reviews: ${PASTE_RAW_LINK}
